@@ -149,8 +149,8 @@ export default function PaymentsPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
                   {payments.map(payment => (
-                    <tr key={payment.id} className="hover:bg-primary/5 transition-colors group cursor-pointer">
-                      <td className="px-6 py-6 text-[14px] font-medium text-primary">#{payment.id.substring(0, 8).toUpperCase()}</td>
+                    <tr key={payment._id || payment.id} className="hover:bg-primary/5 transition-colors group cursor-pointer">
+                      <td className="px-6 py-6 text-[14px] font-medium text-primary">#{(payment._id || payment.id || '').substring(0, 8).toUpperCase()}</td>
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center font-bold text-[10px] text-primary">
@@ -176,7 +176,7 @@ export default function PaymentsPage() {
                         <div className="flex items-center gap-3">
                           {payment.status === 'PENDING' && (
                             <button 
-                              onClick={() => handleVerify(payment._id || payment.id)} 
+                              onClick={() => handleVerify(payment._id || payment.id || '')} 
                               className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-[12px] font-bold tracking-wider flex items-center gap-1 transition-all"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" /> Verify

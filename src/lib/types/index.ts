@@ -37,6 +37,7 @@ export type PaymentMethod = 'UPI QR' | 'UPI ID' | 'Bank Transfer';
 export type PaymentStatus = 'Pending Verification' | 'Verified' | 'Rejected' | 'PAID' | 'PENDING';
 
 export interface Payment {
+  _id?: string;
   id: string;
   customerId: string; // or customerName if simple
   customerName: string;
