@@ -15,7 +15,6 @@ export interface IQuotation extends Document {
   eventType: string;
   services: ServiceItem[];
   discount: number;
-  gst: number;
   subTotal: number;
   grandTotal: number;
   paymentTerms: string;
@@ -39,7 +38,6 @@ const QuotationSchema: Schema = new Schema({
   eventType: { type: String, required: true },
   services: [ServiceItemSchema],
   discount: { type: Number, default: 0 },
-  gst: { type: Number, default: 0 },
   subTotal: { type: Number, required: true },
   grandTotal: { type: Number, required: true },
   paymentTerms: { type: String },

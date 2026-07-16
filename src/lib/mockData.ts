@@ -26,9 +26,8 @@ export const mockQuotations: Quotation[] = [
       { id: 's2', name: 'Cinematic Videography', quantity: 1, price: 35000 },
     ],
     discount: 5000,
-    gst: 9900, // 18% of 55000 = 9900
     subTotal: 60000,
-    grandTotal: 64900,
+    grandTotal: 55000,
     paymentTerms: '50% Advance, 50% on Delivery',
     termsConditions: 'Standard terms apply.',
     createdAt: '2026-07-10T10:00:00Z',

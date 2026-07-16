@@ -24,7 +24,6 @@ export interface Quotation {
   eventType: string;
   services: ServiceItem[];
   discount: number;
-  gst: number;
   subTotal: number;
   grandTotal: number;
   paymentTerms: string;

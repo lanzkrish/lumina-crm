@@ -202,8 +202,8 @@ export default function PaymentPage() {
                 {method === 'bank' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full px-8 space-y-3">
                     <div className="w-full flex items-center justify-between border-b border-outline-variant/30 pb-4">
-                      <span className="text-[16px] text-on-surface font-semibold">Arjun Films Private Ltd</span>
-                      <span className="bg-green-100 text-green-700 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Verified Merchant</span>
+                      <span className="text-[16px] text-on-surface font-semibold">Babul Samal</span>
+                      <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Verified Account</span>
                     </div>
                     <div className="flex justify-between items-center border-b border-outline-variant/20 py-2 group cursor-pointer hover:bg-surface-variant/20 transition-colors px-1 -mx-1 rounded" onClick={() => { navigator.clipboard.writeText('SBI'); toast.success('Bank name copied!'); }}>
                       <span className="text-[12px] font-medium text-on-surface-variant">Bank Name</span>

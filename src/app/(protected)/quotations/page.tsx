@@ -35,8 +35,7 @@ export default function QuotationsPage() {
   const [loading, setLoading] = useState(false);
 
   const subTotal = services.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const gst = Math.round((subTotal - formData.discount) * 0.18);
-  const grandTotal = subTotal - formData.discount + gst;
+  const grandTotal = subTotal - formData.discount;
 
   const handleAddService = () => {
     setServices([...services, { id: Date.now().toString(), name: '', quantity: 1, price: 0 }]);
@@ -61,7 +60,6 @@ export default function QuotationsPage() {
       await createQuotation({
         ...formData,
         services,
-        gst,
         subTotal,
         grandTotal
       });
@@ -159,7 +157,7 @@ export default function QuotationsPage() {
       </div>
       <div class="card">
       <h3>Payment</h3>
-      <p>Tax: ₹${gst.toLocaleString()}<br>PhonePe: <b>7788992712</b><br>Total: <b>₹${grandTotal.toLocaleString()}</b></p>
+      <p>Discount: ₹${formData.discount.toLocaleString()}<br>PhonePe: <b>9938992712</b><br>Total: <b>₹${grandTotal.toLocaleString()}</b></p>
       </div>
       </div>
 
@@ -171,7 +169,7 @@ export default function QuotationsPage() {
       <table class="summary">
       <tr><td>Subtotal</td><td align="right">₹${subTotal.toLocaleString()}</td></tr>
       <tr><td>Discount</td><td align="right">-₹${formData.discount.toLocaleString()}</td></tr>
-      <tr><td>GST (18%)</td><td align="right">₹${gst.toLocaleString()}</td></tr>
+
       <tr class="total"><td>Grand Total</td><td align="right">₹${grandTotal.toLocaleString()}</td></tr>
       </table>
 
@@ -383,10 +381,6 @@ export default function QuotationsPage() {
                   onChange={e => setFormData({ ...formData, discount: parseInt(e.target.value) || 0 })}
                   type="number"
                 />
-              </div>
-              <div className="flex justify-between items-center text-[16px]">
-                <span className="text-on-surface-variant">GST (18%)</span>
-                <span className="text-on-surface-variant">₹{gst.toLocaleString()}</span>
               </div>
               <div className="h-px w-full bg-outline-variant/30 my-4"></div>
               <div className="flex justify-between items-center text-[24px]">

@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function BlueprintPage() {
   const [crewData, setCrewData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedLocations, setExpandedLocations] = useState<Record<string, boolean>>({});
+  const [searchLocation, setSearchLocation] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('All');
   
   // Modal State
@@ -40,11 +40,6 @@ export default function BlueprintPage() {
     try {
       const data = await getCrew();
       setCrewData(data);
-      // Auto-expand all locations by default
-      const locs = Array.from(new Set(data.map((c: any) => c.location)));
-      const expandState: Record<string, boolean> = {};
-      locs.forEach((l: any) => (expandState[l] = true));
-      setExpandedLocations(expandState);
     } catch (e) {
       toast.error('Failed to load blueprint data');
     } finally {
@@ -60,20 +55,12 @@ export default function BlueprintPage() {
   const uniqueLocations = Array.from(new Set(crewData.map(c => c.location)));
   const uniqueRoles = Array.from(new Set(crewData.map(c => c.role)));
 
-  // Group data by location (with role filter applied)
-  const groupedData: Record<string, any[]> = {};
-  crewData.forEach(c => {
-    if (selectedRole !== 'All' && c.role !== selectedRole) return;
-    
-    if (!groupedData[c.location]) {
-      groupedData[c.location] = [];
-    }
-    groupedData[c.location].push(c);
+  // Filter data by search location and selected role
+  const filteredData = crewData.filter(c => {
+    const matchRole = selectedRole === 'All' || c.role === selectedRole;
+    const matchLocation = searchLocation === '' || c.location.toLowerCase().includes(searchLocation.toLowerCase());
+    return matchRole && matchLocation;
   });
-
-  const handleToggleLocation = (loc: string) => {
-    setExpandedLocations(prev => ({ ...prev, [loc]: !prev[loc] }));
-  };
 
   const openAddModal = () => {
     setFormData({ name: '', role: '', location: '', phone: '', address: '', charges: '' });
@@ -136,117 +123,97 @@ export default function BlueprintPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-[28px] font-medium text-primary tracking-tight">Crew Blueprint</h1>
-          <p className="text-on-surface-variant text-[14px]">Manage your photographers, editors, and locations</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-outline-variant/30 pb-6">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-outline w-5 h-5" />
+            <input 
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-surface-variant/30 border border-outline-variant/50 rounded-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-[14px] text-on-surface"
+              placeholder="Location..."
+            />
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="bg-surface-variant/50 border border-outline-variant/50 px-4 py-2.5 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-[14px] text-on-surface"
-          >
-            <option value="All">All Roles</option>
-            {uniqueRoles.map((role: any) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
+        
+        <div className="flex-1 flex overflow-x-auto custom-scrollbar px-2 pb-2 sm:pb-0 gap-2 items-center min-w-0">
           <button 
-            onClick={openAddModal}
-            className="bg-primary text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+            onClick={() => setSelectedRole('All')}
+            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${selectedRole === 'All' ? 'bg-primary text-on-primary' : 'bg-surface-variant/50 text-on-surface-variant hover:bg-surface-variant/80'}`}
           >
-            <Plus className="w-5 h-5" />
-            <span className="font-medium text-[14px]">Add Crew</span>
+            All Roles
           </button>
+          {uniqueRoles.map((role: any) => (
+            <button 
+              key={role}
+              onClick={() => setSelectedRole(role)}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${selectedRole === role ? 'bg-primary text-on-primary' : 'bg-surface-variant/50 text-on-surface-variant hover:bg-surface-variant/80'}`}
+            >
+              {role}
+            </button>
+          ))}
         </div>
+
+        <button 
+          onClick={openAddModal}
+          className="shrink-0 bg-primary text-white px-4 py-2.5 rounded-full flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+        >
+          <Plus className="w-5 h-5" />
+          <span className="font-medium text-[14px] hidden sm:inline">Add Crew</span>
+        </button>
       </div>
 
-      <div className="space-y-6">
-        {Object.keys(groupedData).length === 0 ? (
-          <div className="text-center py-20 bg-surface-variant/30 rounded-2xl border border-dashed border-outline-variant">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredData.length === 0 ? (
+          <div className="col-span-full text-center py-20 bg-surface-variant/30 rounded-2xl border border-dashed border-outline-variant">
             <Briefcase className="w-12 h-12 text-on-surface-variant/50 mx-auto mb-3" />
             <p className="text-on-surface-variant font-medium">No crew members found.</p>
-            <p className="text-on-surface-variant/70 text-[14px] mt-1">Add your first photographer or editor to the blueprint.</p>
+            <p className="text-on-surface-variant/70 text-[14px] mt-1">Try adjusting your filters or add a new member.</p>
           </div>
         ) : (
-          Object.entries(groupedData).map(([location, members]) => (
-            <div key={location} className="glass-card overflow-hidden">
-              <button 
-                onClick={() => handleToggleLocation(location)}
-                className="w-full flex items-center justify-between p-5 bg-primary/5 hover:bg-primary/10 transition-colors border-b border-outline-variant/30"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-[18px] font-medium text-primary">{location}</h3>
-                  <span className="bg-primary/10 text-primary text-[12px] px-2 py-0.5 rounded-full font-medium">
-                    {members.length} members
-                  </span>
+          filteredData.map(crew => (
+            <div key={crew._id} className="glass-card rounded-2xl overflow-hidden group relative flex flex-col shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 transition-shadow">
+              {/* Gradient Header */}
+              <div className="h-32 bg-gradient-to-br from-primary/80 to-primary/40 relative">
+                <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
+                {/* Actions Dropdown */}
+                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEditModal(crew)} className="p-1.5 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-colors">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(crew._id)} className="p-1.5 bg-error/80 hover:bg-error backdrop-blur-md rounded-full text-white transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                {expandedLocations[location] ? <ChevronUp className="text-primary w-5 h-5" /> : <ChevronDown className="text-primary w-5 h-5" />}
-              </button>
+              </div>
               
-              <AnimatePresence>
-                {expandedLocations[location] && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-x-auto"
-                  >
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-outline-variant/30 text-[12px] uppercase tracking-wider text-on-surface-variant bg-surface-variant/20">
-                          <th className="p-4 font-semibold">Name & Role</th>
-                          <th className="p-4 font-semibold">Contact</th>
-                          <th className="p-4 font-semibold">Address</th>
-                          <th className="p-4 font-semibold">Daily Charge</th>
-                          <th className="p-4 font-semibold text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {members.map((crew) => (
-                          <tr key={crew._id} className="border-b border-outline-variant/10 hover:bg-surface-variant/30 transition-colors group">
-                            <td className="p-4">
-                              <p className="font-medium text-on-surface">{crew.name}</p>
-                              <span className="inline-flex mt-1 items-center gap-1 bg-secondary/10 text-secondary text-[11px] px-2 py-0.5 rounded-full font-medium">
-                                <Briefcase className="w-3 h-3" /> {crew.role}
-                              </span>
-                            </td>
-                            <td className="p-4 text-[14px] text-on-surface-variant">
-                              <div className="flex items-center gap-1.5">
-                                <Phone className="w-3.5 h-3.5" />
-                                {crew.phone}
-                              </div>
-                            </td>
-                            <td className="p-4 text-[14px] text-on-surface-variant max-w-[200px] truncate">
-                              {crew.address}
-                            </td>
-                            <td className="p-4">
-                              <div className="flex items-center gap-1.5 text-primary font-medium">
-                                <CreditCard className="w-4 h-4" />
-                                ₹{crew.charges.toLocaleString()}
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => openEditModal(crew)} className="p-1.5 text-secondary hover:bg-secondary/10 rounded-lg transition-colors">
-                                  <Edit className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => handleDelete(crew._id)} className="p-1.5 text-error hover:bg-error/10 rounded-lg transition-colors">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Avatar */}
+              <div className="px-6 relative -mt-10 mb-2">
+                <div className="w-20 h-20 rounded-full border-4 border-surface bg-primary text-white flex items-center justify-center text-[28px] font-bold shadow-md">
+                  {crew.name.charAt(0).toUpperCase()}
+                </div>
+              </div>
+              
+              {/* Info section */}
+              <div className="px-6 pb-6 flex-1 flex flex-col">
+                <h3 className="text-[18px] font-bold text-on-surface leading-tight">{crew.name}</h3>
+                <p className="text-[13px] font-semibold tracking-wide text-primary mb-3 uppercase">{crew.role}</p>
+                
+                <div className="space-y-2 mt-auto pt-4 border-t border-outline-variant/20">
+                  <div className="flex items-start gap-2 text-on-surface-variant text-[13px]">
+                    <MapPin className="w-4 h-4 shrink-0 text-primary/70" />
+                    <span className="truncate">{crew.location}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-on-surface-variant text-[13px]">
+                    <Phone className="w-4 h-4 shrink-0 text-primary/70" />
+                    <span>{crew.phone}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-on-surface-variant text-[13px]">
+                    <CreditCard className="w-4 h-4 shrink-0 text-primary/70" />
+                    <span className="font-semibold text-primary">₹{crew.charges.toLocaleString()} / day</span>
+                  </div>
+                </div>
+              </div>
             </div>
           ))
         )}
