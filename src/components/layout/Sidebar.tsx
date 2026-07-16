@@ -12,11 +12,13 @@ import {
   HelpCircle, 
   LogOut,
   Plus,
-  Briefcase
+  Briefcase,
+  Link as LinkIcon
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -63,10 +65,16 @@ export default function Sidebar() {
 
       {/* CTA */}
       <div className="px-4 mb-6">
-        <Link href="/quotations" className="w-full bg-primary text-on-primary py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">
-          <Plus className="w-5 h-5" />
-          <span className="text-[14px] font-medium">Add Quotation</span>
-        </Link>
+        <button 
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.origin + '/payment');
+            toast.success('Payment link copied to clipboard!');
+          }} 
+          className="w-full bg-primary text-on-primary py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+        >
+          <LinkIcon className="w-5 h-5" />
+          <span className="text-[14px] font-medium">Copy Payment Link</span>
+        </button>
       </div>
 
       {/* Main Tabs */}

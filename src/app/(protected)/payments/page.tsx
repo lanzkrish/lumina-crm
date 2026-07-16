@@ -166,7 +166,7 @@ export default function PaymentsPage() {
                       <td className="px-6 py-6 text-[14px] font-medium text-on-surface-variant">{payment.paymentMethod}</td>
                       <td className="px-6 py-6">
                         {payment.status === 'PAID' ? (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[12px] font-bold tracking-wider">PAID</span>
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[12px] font-bold tracking-wider">VERIFIED</span>
                         ) : (
                           <span className="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[12px] font-bold tracking-wider">PENDING</span>
                         )}
