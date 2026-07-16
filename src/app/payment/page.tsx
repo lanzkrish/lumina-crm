@@ -106,7 +106,7 @@ export default function PaymentPage() {
       >
         {/* Header Section */}
         <div className="text-center mb-10 mt-6">
-          <h1 className="text-[32px] font-bold text-primary tracking-tighter mb-2">Arjun Films</h1>
+          <h1 className="text-[32px] font-bold text-primary tracking-tighter mb-2">Arjun Photography</h1>
           <p className="text-on-surface-variant font-medium text-[15px]">Secure Payment Gateway</p>
         </div>
 

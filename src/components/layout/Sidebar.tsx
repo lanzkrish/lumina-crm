@@ -59,7 +59,7 @@ export default function Sidebar() {
         </div>
       {/* Header / Logo */}
       <div className="px-6 mb-8">
-        <h1 className="text-[24px] font-medium text-primary tracking-tighter">Arjun Films</h1>
+        <h1 className="text-[24px] font-medium text-primary tracking-tighter">Arjun Photography</h1>
         <p className="text-on-surface-variant text-[14px] font-medium opacity-70">Premium Photography</p>
       </div>
 
