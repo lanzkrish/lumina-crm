@@ -31,6 +31,12 @@ export async function createPayment(data: any) {
   return JSON.parse(JSON.stringify(payment));
 }
 
+export async function verifyPayment(id: string) {
+  await connectToDatabase();
+  const payment = await Payment.findByIdAndUpdate(id, { status: 'PAID' }, { new: true });
+  return JSON.parse(JSON.stringify(payment));
+}
+
 export async function getQuotations() {
   await connectToDatabase();
   const quotations = await Quotation.find({}).sort({ createdAt: -1 }).lean();

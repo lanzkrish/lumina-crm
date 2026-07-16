@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Ajay Films CRM',
+  title: 'Arjun Films CRM',
   description: 'Elevated Photography Management',
 };
 

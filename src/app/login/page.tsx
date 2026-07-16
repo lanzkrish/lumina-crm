@@ -66,7 +66,7 @@ export default function LoginPage() {
             <div className="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20 mb-4 transform transition-transform hover:scale-105 duration-300">
               <Camera className="text-white w-8 h-8" />
             </div>
-            <h1 className="text-[32px] leading-[1.2] font-semibold text-primary tracking-tighter">Ajay Films</h1>
+            <h1 className="text-[32px] leading-[1.2] font-semibold text-primary tracking-tighter">Arjun Films</h1>
             <p className="text-[14px] text-on-surface-variant mt-1 opacity-70 font-medium">Elevated Photography Management</p>
           </div>
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 id="username" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="creative.pro@ajayfilms.com" 
+                placeholder="creative.pro@arjunfilms.com" 
                 type="text"
                 required
               />

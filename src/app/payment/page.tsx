@@ -11,21 +11,46 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { UploadButton } from '@/utils/uploadthing';
+import { createPayment } from '@/app/actions';
 
 export default function PaymentPage() {
   const [method, setMethod] = useState<'qr' | 'id' | 'bank'>('qr');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    customerName: '',
+    phone: '',
+    email: '',
+    amount: ''
+  });
+  const [screenshotUrl, setScreenshotUrl] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!screenshotUrl) {
+      toast.error('Please upload a payment screenshot first');
+      return;
+    }
+    
     setIsSubmitting(true);
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await createPayment({
+        ...formData,
+        amount: Number(formData.amount),
+        paymentMethod: method === 'qr' ? 'UPI QR' : method === 'id' ? 'UPI ID' : 'Bank Transfer',
+        screenshotUrl,
+        status: 'PENDING'
+      });
       setIsSuccess(true);
-      toast.success('Payment details submitted successfully!');
-    }, 2000);
+      toast.success('Payment submitted successfully!');
+    } catch (err) {
+      toast.error('Failed to submit payment details');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -39,13 +64,33 @@ export default function PaymentPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h2 className="text-[24px] font-semibold text-primary mb-2">Booking Confirmed!</h2>
-          <p className="text-on-surface-variant mb-8">We have received your payment details. A confirmation email has been sent to you.</p>
+          <h2 className="text-[24px] font-semibold text-primary mb-2">Invoice Generated</h2>
+          <p className="text-on-surface-variant mb-6">Your payment details have been received and an invoice has been generated.</p>
+          
+          <div className="bg-surface-variant/30 p-6 rounded-xl text-left space-y-3 mb-8 border border-outline-variant/30">
+            <div className="flex justify-between border-b border-outline-variant/20 pb-2">
+              <span className="text-[14px] text-on-surface-variant">Name</span>
+              <span className="text-[14px] font-medium text-primary">{formData.customerName}</span>
+            </div>
+            <div className="flex justify-between border-b border-outline-variant/20 pb-2">
+              <span className="text-[14px] text-on-surface-variant">Amount</span>
+              <span className="text-[14px] font-medium text-primary">₹{formData.amount}</span>
+            </div>
+            <div className="flex justify-between border-b border-outline-variant/20 pb-2">
+              <span className="text-[14px] text-on-surface-variant">Status</span>
+              <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wider">PENDING VERIFICATION</span>
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="text-[14px] text-on-surface-variant">Date</span>
+              <span className="text-[14px] font-medium text-primary">{new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+
           <button 
-            onClick={() => window.location.href = '/login'}
+            onClick={() => window.location.reload()}
             className="w-full bg-primary text-white py-3 rounded-xl font-medium shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
           >
-            Return to Home
+            Submit Another Payment
           </button>
         </motion.div>
       </main>
@@ -61,7 +106,7 @@ export default function PaymentPage() {
       >
         {/* Header Section */}
         <div className="text-center mb-10 mt-6">
-          <h1 className="text-[32px] font-bold text-primary tracking-tighter mb-2">Ajay Films</h1>
+          <h1 className="text-[32px] font-bold text-primary tracking-tighter mb-2">Arjun Films</h1>
           <p className="text-on-surface-variant font-medium text-[15px]">Secure Payment Gateway</p>
         </div>
 
@@ -74,16 +119,16 @@ export default function PaymentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col">
                   <label className="text-[12px] font-semibold text-on-surface-variant mb-1">Full Name</label>
-                  <input className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="Johnathan Doe" required type="text"/>
+                  <input value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="Johnathan Doe" required type="text"/>
                 </div>
                 <div className="flex flex-col">
                   <label className="text-[12px] font-semibold text-on-surface-variant mb-1">Phone Number</label>
-                  <input className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="+91 98765 43210" required type="tel"/>
+                  <input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="+91 98765 43210" required type="tel"/>
                 </div>
               </div>
               <div className="flex flex-col">
                 <label className="text-[12px] font-semibold text-on-surface-variant mb-1">Email Address</label>
-                <input className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="hello@example.com" required type="email"/>
+                <input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary transition-colors text-[16px]" placeholder="hello@example.com" required type="email"/>
               </div>
             </div>
 
@@ -91,7 +136,7 @@ export default function PaymentPage() {
             <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
               <div className="flex flex-col">
                 <label className="text-[14px] font-medium text-on-surface-variant mb-2">Enter amount to be paid</label>
-                <input className="w-full bg-transparent border-b-2 border-primary/30 py-2 focus:outline-none focus:border-primary transition-colors text-[28px] font-semibold text-primary" placeholder="₹ 0" required type="number" min="1"/>
+                <input value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} className="w-full bg-transparent border-b-2 border-primary/30 py-2 focus:outline-none focus:border-primary transition-colors text-[28px] font-semibold text-primary" placeholder="₹ 0" required type="number" min="1"/>
               </div>
             </div>
             {/* Payment Methods */}
@@ -157,7 +202,7 @@ export default function PaymentPage() {
                 {method === 'bank' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full px-8 space-y-3">
                     <div className="w-full flex items-center justify-between border-b border-outline-variant/30 pb-4">
-                      <span className="text-[16px] text-on-surface font-semibold">Ajay Films Private Ltd</span>
+                      <span className="text-[16px] text-on-surface font-semibold">Arjun Films Private Ltd</span>
                       <span className="bg-green-100 text-green-700 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Verified Merchant</span>
                     </div>
                     <div className="flex justify-between items-center border-b border-outline-variant/20 py-2 group cursor-pointer hover:bg-surface-variant/20 transition-colors px-1 -mx-1 rounded" onClick={() => { navigator.clipboard.writeText('SBI'); toast.success('Bank name copied!'); }}>
@@ -188,9 +233,31 @@ export default function PaymentPage() {
 
             {/* Footer Actions */}
             <div className="space-y-6 pt-4">
-              <div className="flex flex-col space-y-2 mt-4">
-                <label className="text-[12px] font-semibold text-on-surface-variant uppercase">Upload Payment Screenshot</label>
-                <input type="file" accept="image/*" className="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" required />
+              <div className="flex flex-col space-y-2 mt-4 items-start">
+                <label className="text-[12px] font-semibold text-on-surface-variant uppercase mb-2">Upload Payment Screenshot</label>
+                {screenshotUrl ? (
+                  <div className="flex items-center gap-4 bg-green-50 p-4 rounded-xl border border-green-200 w-full">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                    <span className="text-[14px] font-medium text-green-800">Screenshot uploaded successfully!</span>
+                  </div>
+                ) : (
+                  <div className="w-full p-4 border-2 border-dashed border-primary/20 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors">
+                    <UploadButton
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res) => {
+                        setScreenshotUrl(res[0].url);
+                        toast.success("Screenshot uploaded");
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast.error(`ERROR! ${error.message}`);
+                      }}
+                      appearance={{
+                        button: "bg-primary text-white text-[14px] font-medium px-4 py-2 rounded-lg",
+                        allowedContent: "hidden"
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="bg-surface-variant/30 p-4 rounded-xl border border-outline-variant/30 mt-4 space-y-2">

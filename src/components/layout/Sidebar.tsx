@@ -15,6 +15,8 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
+import { X } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -27,12 +29,35 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
+  const { sidebarOpen, setSidebarOpen } = useUIStore();
 
   return (
-    <aside className="hidden md:flex flex-col h-full w-64 bg-surface/80 dark:bg-inverse-surface/90 backdrop-blur-2xl border-r border-white/20 dark:border-outline-variant/10 shadow-2xl shadow-primary/4 py-8 space-y-2 z-50 transition-all duration-300">
+    <>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50 flex flex-col h-full w-64 
+        bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-3xl 
+        border-r border-white/20 dark:border-outline-variant/10 
+        shadow-2xl shadow-primary/4 py-8 space-y-2 transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        {/* Mobile Close Button */}
+        <div className="md:hidden absolute top-4 right-4">
+          <button onClick={() => setSidebarOpen(false)} className="p-2 text-on-surface-variant hover:text-primary bg-surface-variant/50 rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       {/* Header / Logo */}
       <div className="px-6 mb-8">
-        <h1 className="text-[24px] font-medium text-primary tracking-tighter">Ajay Films</h1>
+        <h1 className="text-[24px] font-medium text-primary tracking-tighter">Arjun Films</h1>
         <p className="text-on-surface-variant text-[14px] font-medium opacity-70">Premium Photography</p>
       </div>
 
@@ -78,5 +103,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

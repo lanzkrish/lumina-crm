@@ -12,20 +12,39 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  Image as ImageIcon
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { verifyPayment } from '@/app/actions';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
+
+  const fetchPayments = async () => {
+    setLoading(true);
+    const data = await getPayments();
+    setPayments(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    getPayments().then((data) => {
-      setPayments(data);
-      setLoading(false);
-    });
+    fetchPayments();
   }, []);
+
+  const handleVerify = async (id: string) => {
+    try {
+      await verifyPayment(id);
+      toast.success('Payment verified successfully!');
+      fetchPayments();
+    } catch (e) {
+      toast.error('Failed to verify payment');
+    }
+  };
 
   const totalReceived = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
   const pendingAmount = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
@@ -154,10 +173,25 @@ export default function PaymentsPage() {
                       </td>
                       <td className="px-6 py-6 text-[14px] font-medium text-on-surface-variant">{dayjs(payment.date).format('DD MMM YYYY')}</td>
                       <td className="px-6 py-6">
-                        <button className="text-primary hover:underline text-[14px] font-medium active:scale-95 transition-transform flex items-center gap-1">
-                          View
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          {payment.status === 'PENDING' && (
+                            <button 
+                              onClick={() => handleVerify(payment._id || payment.id)} 
+                              className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-[12px] font-bold tracking-wider flex items-center gap-1 transition-all"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Verify
+                            </button>
+                          )}
+                          {payment.screenshotUrl && (
+                            <button 
+                              onClick={() => setSelectedScreenshot(payment.screenshotUrl)} 
+                              className="text-primary hover:bg-primary/10 p-1.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-1"
+                              title="View Proof"
+                            >
+                              <ImageIcon className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -179,6 +213,34 @@ export default function PaymentsPage() {
           </>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedScreenshot && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-3xl w-full bg-surface rounded-2xl overflow-hidden shadow-2xl"
+            >
+              <div className="absolute top-4 right-4 z-10">
+                <button 
+                  onClick={() => setSelectedScreenshot(null)}
+                  className="p-2 bg-black/50 text-white hover:bg-black/80 rounded-full transition-colors backdrop-blur-md"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <img src={selectedScreenshot} alt="Payment Proof" className="w-full h-auto max-h-[85vh] object-contain" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

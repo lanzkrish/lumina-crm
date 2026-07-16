@@ -4,11 +4,13 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
 
 export default function Topbar() {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
 
   // Format pathname for title
   const title = pathname === '/dashboard' 
@@ -18,7 +20,7 @@ export default function Topbar() {
   return (
     <header className="flex justify-between items-center px-8 h-20 w-full bg-surface/70 backdrop-blur-xl border-b border-white/10 shadow-sm shadow-primary/5 z-40 sticky top-0">
       <div className="flex items-center gap-4">
-        <div className="md:hidden">
+        <div className="md:hidden" onClick={toggleSidebar}>
           <Menu className="text-primary cursor-pointer w-6 h-6" />
         </div>
         <h2 className="text-[24px] font-medium text-primary tracking-tight">{title}</h2>
