@@ -1,0 +1,64 @@
+import { Contact, Payment, Quotation, Booking } from '@/lib/types';
+import * as actions from '@/app/actions';
+
+export const getDashboardStats = async () => {
+  try {
+    const stats = await actions.getDashboardStats();
+    return stats;
+  } catch (e) {
+    console.error(e);
+    return {
+      totalQuotations: 0,
+      totalBookings: 0,
+      pendingPaymentsAmount: 0,
+      revenue: 0,
+      totalContacts: 0
+    };
+  }
+};
+
+export const getRecentActivity = async () => {
+  try {
+    const payments = await actions.getPayments();
+    return payments.slice(0, 5);
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getContacts = async (): Promise<Contact[]> => {
+  try {
+    const contacts = await actions.getContacts();
+    return contacts.map((c: any) => ({
+      ...c,
+      id: c._id.toString()
+    }));
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getPayments = async (): Promise<Payment[]> => {
+  try {
+    const payments = await actions.getPayments();
+    return payments.map((p: any) => ({
+      ...p,
+      id: p._id.toString()
+    }));
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const createQuotation = async (data: any): Promise<Quotation> => {
+  const quotation = await actions.createQuotation(data);
+  return { ...quotation, id: quotation._id.toString() };
+};
+
+export const createPayment = async (data: any): Promise<Payment> => {
+  const payment = await actions.createPayment(data);
+  return { ...payment, id: payment._id.toString() };
+};
