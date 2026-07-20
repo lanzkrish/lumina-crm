@@ -15,6 +15,7 @@ export interface ServiceItem {
 }
 
 export interface Quotation {
+  _id?: string;
   id: string;
   customerName: string;
   phone: string;
@@ -30,6 +31,7 @@ export interface Quotation {
   termsConditions: string;
   createdAt: string;
   updatedAt: string;
+  projectId?: string;
 }
 
 export type PaymentMethod = 'UPI QR' | 'UPI ID' | 'Bank Transfer';
@@ -49,6 +51,7 @@ export interface Payment {
   status: PaymentStatus;
   date: string;
   remarks?: string;
+  projectId?: string;
 }
 
 export type BookingStatus = 'Upcoming' | 'Completed' | 'Cancelled';
@@ -65,9 +68,16 @@ export interface Booking {
   pending: number;
   status: BookingStatus;
   createdAt: string;
+  projectId?: string;
 }
 
-export interface Contact {
+export interface CrewBlueprintItem {
+  role: string;
+  assignedCrewId?: string;
+  charges?: number;
+}
+
+export interface Project {
   id: string;
   name: string;
   company?: string;
@@ -75,10 +85,13 @@ export interface Contact {
   email: string;
   location: string;
   eventType: string;
-  leadSource: string;
+  eventDate?: string;
   status: string;
-  notes: string;
-  tags: string[];
+  notes?: string;
+  quotations: string[];
+  payments: string[];
+  crewBlueprint: CrewBlueprintItem[];
+  bookingId?: string;
   createdAt: string;
 }
 

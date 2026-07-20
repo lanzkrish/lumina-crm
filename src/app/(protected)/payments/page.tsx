@@ -13,17 +13,20 @@ import {
   ChevronRight,
   Eye,
   Image as ImageIcon,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 import dayjs from 'dayjs';
-import { verifyPayment } from '@/app/actions';
+import { verifyPayment, deletePayment } from '@/app/actions';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
+  const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -46,10 +49,23 @@ export default function PaymentsPage() {
     }
   };
 
-  const totalReceived = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
-  const pendingAmount = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
+  const handleDelete = async () => {
+    if (!paymentToDelete) return;
+    try {
+      await deletePayment(paymentToDelete);
+      toast.success('Payment deleted successfully!');
+      fetchPayments();
+    } catch (e) {
+      toast.error('Failed to delete payment');
+    }
+  };
+
+  const isPaid = (p: Payment) => p.status === 'PAID' || p.status === 'Verified';
+  
+  const totalReceived = payments.filter(isPaid).reduce((sum, p) => sum + p.amount, 0);
+  const pendingAmount = payments.filter(p => p.status === 'PENDING' || p.status === 'Pending Verification').reduce((sum, p) => sum + p.amount, 0);
   const todayCollections = payments
-    .filter(p => p.status === 'PAID' && dayjs(p.date).isSame(dayjs(), 'day'))
+    .filter(p => isPaid(p) && dayjs(p.date).isSame(dayjs(), 'day'))
     .reduce((sum, p) => sum + p.amount, 0);
 
   return (
@@ -82,12 +98,14 @@ export default function PaymentsPage() {
         </div>
 
         {/* Today */}
-        <div className="glass-card p-8 rounded-xl bg-primary-container text-white h-44">
-          <span className="text-on-primary-container text-[14px] font-medium">Today's Collection</span>
-          <div className="mt-4 text-[32px] font-semibold tracking-tight text-white">₹{todayCollections.toLocaleString()}</div>
-          <div className="mt-2 text-[12px] opacity-80 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            {payments.filter(p => p.status === 'PAID' && dayjs(p.date).isSame(dayjs(), 'day')).length} payments processed
+        <div className="glass-card p-8 rounded-xl flex flex-col justify-between h-44">
+          <div>
+            <span className="text-on-surface-variant text-[14px] font-medium">Today's Collection</span>
+            <div className="mt-4 text-[32px] font-semibold text-primary tracking-tight">₹{todayCollections.toLocaleString()}</div>
+          </div>
+          <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            {payments.filter(p => isPaid(p) && dayjs(p.date).isSame(dayjs(), 'day')).length} payments processed
           </div>
         </div>
 
@@ -176,7 +194,10 @@ export default function PaymentsPage() {
                         <div className="flex items-center gap-3">
                           {payment.status === 'PENDING' && (
                             <button 
-                              onClick={() => handleVerify(payment._id || payment.id || '')} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleVerify(payment._id || payment.id || '');
+                              }} 
                               className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-[12px] font-bold tracking-wider flex items-center gap-1 transition-all"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" /> Verify
@@ -184,13 +205,26 @@ export default function PaymentsPage() {
                           )}
                           {payment.screenshotUrl && (
                             <button 
-                              onClick={() => setSelectedScreenshot(payment.screenshotUrl)} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedScreenshot(payment.screenshotUrl);
+                              }} 
                               className="text-primary hover:bg-primary/10 p-1.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-1"
                               title="View Proof"
                             >
                               <ImageIcon className="w-5 h-5" />
                             </button>
                           )}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPaymentToDelete(payment._id || payment.id || '');
+                            }} 
+                            className="text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-1 ml-auto"
+                            title="Delete Payment"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -241,6 +275,16 @@ export default function PaymentsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmationDialog
+        isOpen={!!paymentToDelete}
+        onClose={() => setPaymentToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Payment"
+        message="Are you sure you want to delete this payment? This action cannot be undone and will permanently remove it from your records."
+        confirmText="Delete Payment"
+        isDestructive={true}
+      />
     </div>
   );
 }

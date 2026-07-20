@@ -12,6 +12,7 @@ export interface IPayment extends Document {
   status: string;
   date: Date;
   remarks?: string;
+  projectId?: string;
 }
 
 const PaymentSchema: Schema = new Schema({
@@ -26,6 +27,7 @@ const PaymentSchema: Schema = new Schema({
   status: { type: String, required: true },
   date: { type: Date, default: Date.now },
   remarks: { type: String },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
 });
 
 export default mongoose.models.Payment || mongoose.model<IPayment>('Payment', PaymentSchema);

@@ -18,7 +18,7 @@ export default function DashboardPage() {
     totalBookings: 0,
     pendingPaymentsAmount: 0,
     revenue: 0,
-    totalContacts: 0,
+    totalProjects: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -99,13 +99,13 @@ export default function DashboardPage() {
         {/* Card 5 */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card p-5 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-primary-container/20 rounded-lg">
-              <Users className="text-primary-container w-5 h-5" />
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Users className="text-purple-700 w-5 h-5" />
             </div>
           </div>
           <div>
-            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Total Contacts</p>
-            <h3 className="text-[24px] font-medium text-primary mt-1">{stats.totalContacts}</h3>
+            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Total Projects</p>
+            <h3 className="text-[24px] font-medium text-primary mt-1">{stats.totalProjects}</h3>
           </div>
         </motion.div>
         

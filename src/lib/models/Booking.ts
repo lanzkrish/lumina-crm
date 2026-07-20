@@ -11,6 +11,7 @@ export interface IBooking extends Document {
   pending: number;
   status: string;
   createdAt: Date;
+  projectId?: string;
 }
 
 const BookingSchema: Schema = new Schema({
@@ -24,6 +25,7 @@ const BookingSchema: Schema = new Schema({
   pending: { type: Number, default: 0 },
   status: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
 });
 
 export default mongoose.models.Booking || mongoose.model<IBooking>('Booking', BookingSchema);

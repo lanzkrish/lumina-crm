@@ -24,7 +24,7 @@ const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Quotations', href: '/quotations', icon: FileText },
   { name: 'Payments', href: '/payments', icon: CreditCard },
-  { name: 'project', href: '/project', icon: Users },
+  { name: 'Projects', href: '/projects', icon: Users },
   { name: 'Blueprint', href: '/blueprints', icon: Briefcase },
 ];
 

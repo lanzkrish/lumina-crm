@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 interface ServiceItem {
   name: string;
+  description?: string;
   quantity: number;
   price: number;
 }
@@ -21,10 +22,12 @@ export interface IQuotation extends Document {
   termsConditions: string;
   createdAt: Date;
   updatedAt: Date;
+  projectId?: string;
 }
 
 const ServiceItemSchema = new Schema({
   name: { type: String, required: true },
+  description: { type: String },
   quantity: { type: Number, required: true, default: 1 },
   price: { type: Number, required: true, default: 0 },
 });
@@ -44,6 +47,8 @@ const QuotationSchema: Schema = new Schema({
   termsConditions: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
 });
 
+delete mongoose.models.Quotation;
 export default mongoose.models.Quotation || mongoose.model<IQuotation>('Quotation', QuotationSchema);

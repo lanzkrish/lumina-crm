@@ -3,7 +3,7 @@ import {
   Quotation,
   Payment,
   Booking,
-  Contact,
+  Project,
   Photographer,
   Videographer,
 } from './types';
@@ -46,7 +46,7 @@ export const mockPayments: Payment[] = [
     paymentMethod: 'UPI QR',
     screenshotUrl: 'https://via.placeholder.com/150',
     status: 'Verified',
-    date: '2026-07-12T14:30:00Z',
+    date: new Date().toISOString(),
   }
 ];
 
@@ -66,18 +66,19 @@ export const mockBookings: Booking[] = [
   }
 ];
 
-export const mockContacts: Contact[] = [
+export const mockProjects: Project[] = [
   {
-    id: 'C-001',
+    id: 'P-001',
     name: 'Rahul Sharma',
     phone: '9876543210',
     email: 'rahul@example.com',
     location: 'Bhubaneswar',
     eventType: 'Wedding',
-    leadSource: 'Instagram',
     status: 'Qualified',
     notes: 'Interested in premium package.',
-    tags: ['High Priority', 'Wedding'],
+    quotations: ['Q-1001'],
+    payments: ['P-2001'],
+    crewBlueprint: [],
     createdAt: '2026-07-01T10:00:00Z',
   }
 ];
