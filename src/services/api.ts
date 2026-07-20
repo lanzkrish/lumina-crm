@@ -1,4 +1,4 @@
-import { Contact, Payment, Quotation, Booking } from '@/lib/types';
+import { Project, Payment, Quotation, Booking } from '@/lib/types';
 import * as actions from '@/app/actions';
 
 export const getDashboardStats = async () => {
@@ -12,7 +12,7 @@ export const getDashboardStats = async () => {
       totalBookings: 0,
       pendingPaymentsAmount: 0,
       revenue: 0,
-      totalContacts: 0
+      totalProjects: 0
     };
   }
 };
@@ -27,10 +27,10 @@ export const getRecentActivity = async () => {
   }
 };
 
-export const getContacts = async (): Promise<Contact[]> => {
+export const getProjects = async (): Promise<Project[]> => {
   try {
-    const contacts = await actions.getContacts();
-    return contacts.map((c: any) => ({
+    const projects = await actions.getProjects();
+    return projects.map((c: any) => ({
       ...c,
       id: c._id.toString()
     }));
