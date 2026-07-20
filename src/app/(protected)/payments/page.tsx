@@ -60,10 +60,12 @@ export default function PaymentsPage() {
     }
   };
 
-  const totalReceived = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
-  const pendingAmount = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
+  const isPaid = (p: Payment) => p.status === 'PAID' || p.status === 'Verified';
+  
+  const totalReceived = payments.filter(isPaid).reduce((sum, p) => sum + p.amount, 0);
+  const pendingAmount = payments.filter(p => p.status === 'PENDING' || p.status === 'Pending Verification').reduce((sum, p) => sum + p.amount, 0);
   const todayCollections = payments
-    .filter(p => p.status === 'PAID' && dayjs(p.date).isSame(dayjs(), 'day'))
+    .filter(p => isPaid(p) && dayjs(p.date).isSame(dayjs(), 'day'))
     .reduce((sum, p) => sum + p.amount, 0);
 
   return (
@@ -96,12 +98,14 @@ export default function PaymentsPage() {
         </div>
 
         {/* Today */}
-        <div className="glass-card p-8 rounded-xl bg-primary-container text-white h-44">
-          <span className="text-on-primary-container text-[14px] font-medium">Today's Collection</span>
-          <div className="mt-4 text-[32px] font-semibold tracking-tight text-white">₹{todayCollections.toLocaleString()}</div>
-          <div className="mt-2 text-[12px] opacity-80 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            {payments.filter(p => p.status === 'PAID' && dayjs(p.date).isSame(dayjs(), 'day')).length} payments processed
+        <div className="glass-card p-8 rounded-xl flex flex-col justify-between h-44">
+          <div>
+            <span className="text-on-surface-variant text-[14px] font-medium">Today's Collection</span>
+            <div className="mt-4 text-[32px] font-semibold text-primary tracking-tight">₹{todayCollections.toLocaleString()}</div>
+          </div>
+          <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            {payments.filter(p => isPaid(p) && dayjs(p.date).isSame(dayjs(), 'day')).length} payments processed
           </div>
         </div>
 

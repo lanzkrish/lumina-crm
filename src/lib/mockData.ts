@@ -46,7 +46,7 @@ export const mockPayments: Payment[] = [
     paymentMethod: 'UPI QR',
     screenshotUrl: 'https://via.placeholder.com/150',
     status: 'Verified',
-    date: '2026-07-12T14:30:00Z',
+    date: new Date().toISOString(),
   }
 ];
 

@@ -12,7 +12,9 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  CreditCard
+  CreditCard,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +24,7 @@ export default function BlueprintPage() {
   const [loading, setLoading] = useState(true);
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -154,24 +157,88 @@ export default function BlueprintPage() {
           ))}
         </div>
 
-        <button 
-          onClick={openAddModal}
-          className="shrink-0 bg-primary text-white px-4 py-2.5 rounded-full flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-medium text-[14px] hidden sm:inline">Add Crew</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="bg-surface-variant/50 p-1 rounded-full flex gap-1">
+            <button 
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'card' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'}`}
+              title="Card View"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'list' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'}`}
+              title="List View"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+
+          <button 
+            onClick={openAddModal}
+            className="shrink-0 bg-primary text-white px-4 py-2.5 rounded-full flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium text-[14px] hidden sm:inline">Add Crew</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredData.length === 0 ? (
-          <div className="col-span-full text-center py-20 bg-surface-variant/30 rounded-2xl border border-dashed border-outline-variant">
-            <Briefcase className="w-12 h-12 text-on-surface-variant/50 mx-auto mb-3" />
-            <p className="text-on-surface-variant font-medium">No crew members found.</p>
-            <p className="text-on-surface-variant/70 text-[14px] mt-1">Try adjusting your filters or add a new member.</p>
-          </div>
-        ) : (
-          filteredData.map(crew => (
+      {filteredData.length === 0 ? (
+        <div className="text-center py-20 bg-surface-variant/30 rounded-2xl border border-dashed border-outline-variant">
+          <Briefcase className="w-12 h-12 text-on-surface-variant/50 mx-auto mb-3" />
+          <p className="text-on-surface-variant font-medium">No crew members found.</p>
+          <p className="text-on-surface-variant/70 text-[14px] mt-1">Try adjusting your filters or add a new member.</p>
+        </div>
+      ) : viewMode === 'list' ? (
+        <div className="glass-card rounded-2xl overflow-hidden shadow-sm overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-variant/30 text-on-surface-variant text-[12px] uppercase tracking-wider">
+                <th className="px-6 py-4 font-semibold">Name</th>
+                <th className="px-6 py-4 font-semibold">Role</th>
+                <th className="px-6 py-4 font-semibold">Location</th>
+                <th className="px-6 py-4 font-semibold">Phone</th>
+                <th className="px-6 py-4 font-semibold">Charges</th>
+                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/20">
+              {filteredData.map(crew => (
+                <tr key={crew._id} className="hover:bg-primary/5 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[16px]">
+                        {crew.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-semibold text-[15px] text-on-surface">{crew.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-[13px] font-medium text-primary uppercase bg-primary/10 px-2 py-1 rounded-md">{crew.role}</span>
+                  </td>
+                  <td className="px-6 py-4 text-on-surface-variant text-[14px]">{crew.location}</td>
+                  <td className="px-6 py-4 text-on-surface-variant text-[14px]">{crew.phone}</td>
+                  <td className="px-6 py-4 text-primary font-semibold text-[14px]">₹{crew.charges.toLocaleString()} / day</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEditModal(crew)} className="p-1.5 text-primary hover:bg-primary/10 rounded-full transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(crew._id)} className="p-1.5 text-error hover:bg-error/10 rounded-full transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredData.map(crew => (
             <div key={crew._id} className="glass-card rounded-2xl overflow-hidden group relative flex flex-col shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 transition-shadow">
               {/* Gradient Header */}
               <div className="h-32 bg-gradient-to-br from-primary/80 to-primary/40 relative">
@@ -215,9 +282,9 @@ export default function BlueprintPage() {
                 </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Datalists for Combobox behavior */}
       <datalist id="locations-list">
