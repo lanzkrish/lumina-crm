@@ -17,7 +17,7 @@ import {
   Trash2
 } from 'lucide-react';
 import dayjs from 'dayjs';
-import { verifyPayment, deletePayment } from '@/app/actions';
+import { verifyPayment, deletePayment, getProjects } from '@/app/actions';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
@@ -28,22 +28,33 @@ export default function PaymentsPage() {
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
 
-  const fetchPayments = async () => {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [paymentToVerify, setPaymentToVerify] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+
+  const fetchPaymentsAndProjects = async () => {
     setLoading(true);
-    const data = await getPayments();
-    setPayments(data);
+    const [paymentsData, projectsData] = await Promise.all([
+      getPayments(),
+      getProjects()
+    ]);
+    setPayments(paymentsData);
+    setProjects(projectsData);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPayments();
+    fetchPaymentsAndProjects();
   }, []);
 
-  const handleVerify = async (id: string) => {
+  const handleVerify = async () => {
+    if (!paymentToVerify) return;
     try {
-      await verifyPayment(id);
+      await verifyPayment(paymentToVerify, selectedProjectId || undefined);
       toast.success('Payment verified successfully!');
-      fetchPayments();
+      setPaymentToVerify(null);
+      setSelectedProjectId('');
+      fetchPaymentsAndProjects();
     } catch (e) {
       toast.error('Failed to verify payment');
     }
@@ -54,7 +65,7 @@ export default function PaymentsPage() {
     try {
       await deletePayment(paymentToDelete);
       toast.success('Payment deleted successfully!');
-      fetchPayments();
+      fetchPaymentsAndProjects();
     } catch (e) {
       toast.error('Failed to delete payment');
     }
@@ -196,7 +207,7 @@ export default function PaymentsPage() {
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleVerify(payment._id || payment.id || '');
+                                setPaymentToVerify(payment._id || payment.id || '');
                               }} 
                               className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-[12px] font-bold tracking-wider flex items-center gap-1 transition-all"
                             >
@@ -285,6 +296,68 @@ export default function PaymentsPage() {
         confirmText="Delete Payment"
         isDestructive={true}
       />
+
+      {/* Verify Payment Modal */}
+      <AnimatePresence>
+        {paymentToVerify && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setPaymentToVerify(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-surface border border-outline-variant/30 rounded-2xl shadow-2xl p-6"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-primary">Verify Payment</h3>
+                <button onClick={() => setPaymentToVerify(null)} className="text-on-surface-variant hover:text-primary transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-[14px] text-on-surface-variant">
+                  Select a project to link this payment to, or leave blank to verify without linking.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-on-surface-variant">Link to Project (Optional)</label>
+                  <select 
+                    value={selectedProjectId} 
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="w-full bg-transparent border border-outline-variant rounded-lg p-3 text-[14px] focus:outline-none focus:border-primary"
+                  >
+                    <option value="">-- Do not link --</option>
+                    {projects.map(p => (
+                      <option key={p._id || p.id} value={p._id || p.id}>
+                        {p.projectNumber} - {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-8">
+                <button 
+                  onClick={() => setPaymentToVerify(null)}
+                  className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors font-medium text-[14px]"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleVerify}
+                  className="px-6 py-2 rounded-xl bg-primary text-on-primary hover:shadow-lg transition-all font-medium text-[14px]"
+                >
+                  Confirm Verify
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

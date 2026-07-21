@@ -47,7 +47,12 @@ export async function getProjectById(id: string) {
 
 export async function createProject(data: any) {
   await connectToDatabase();
-  const project = await Project.create(data);
+  
+  // Generate a random 6-character alphanumeric string for projectNumber
+  const projectNumber = 'PRJ-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  const projectData = { ...data, projectNumber };
+  
+  const project = await Project.create(projectData);
   revalidatePath('/projects', 'layout');
   return JSON.parse(JSON.stringify(project));
 }
@@ -78,10 +83,52 @@ export async function createPayment(data: any) {
   return JSON.parse(JSON.stringify(payment));
 }
 
-export async function verifyPayment(id: string) {
+export async function verifyPayment(id: string, projectId?: string) {
   await connectToDatabase();
-  const payment = await Payment.findByIdAndUpdate(id, { status: 'PAID' }, { new: true });
+  const updateData: any = { status: 'PAID' };
+  if (projectId) {
+    updateData.projectId = projectId;
+  }
+  const payment = await Payment.findByIdAndUpdate(id, updateData, { new: true });
+  
+  if (projectId) {
+    // Add payment to project's payments array
+    await Project.findByIdAndUpdate(projectId, { $addToSet: { payments: id } });
+  }
+  
   return JSON.parse(JSON.stringify(payment));
+}
+
+export async function addProjectExpense(projectId: string, expense: { date: string, description: string, amount: number }) {
+  await connectToDatabase();
+  const project = await Project.findByIdAndUpdate(
+    projectId,
+    { $push: { expenses: expense } },
+    { new: true }
+  );
+  revalidatePath('/projects', 'layout');
+  return JSON.parse(JSON.stringify(project));
+}
+
+export async function addProjectCrew(projectId: string, crewData: { role: string, assignedCrewId?: string, charges: number }) {
+  await connectToDatabase();
+  const updateQuery: any = { $push: { crewBlueprint: crewData } };
+  
+  if (crewData.charges && crewData.charges > 0) {
+    updateQuery.$push.expenses = {
+      date: new Date().toISOString(),
+      description: `Crew Assigned: ${crewData.role}`,
+      amount: crewData.charges
+    };
+  }
+
+  const project = await Project.findByIdAndUpdate(
+    projectId,
+    updateQuery,
+    { new: true }
+  );
+  revalidatePath('/projects', 'layout');
+  return JSON.parse(JSON.stringify(project));
 }
 
 export async function deletePayment(id: string) {
@@ -141,7 +188,15 @@ export async function getDashboardStats() {
     { $match: { status: 'PENDING' } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
-  const pendingPaymentsAmount = pendingPaymentsAgg.length > 0 ? pendingPaymentsAgg[0].total : 0;
+  const unverifiedPaymentsAmount = pendingPaymentsAgg.length > 0 ? pendingPaymentsAgg[0].total : 0;
+  
+  const totalProjectValueAgg = await Project.aggregate([
+    { $group: { _id: null, total: { $sum: '$totalValue' } } }
+  ]);
+  const totalProjectValue = totalProjectValueAgg.length > 0 ? totalProjectValueAgg[0].total : 0;
+  
+  // New logic: pending amount is total project value minus total revenue
+  const pendingPaymentsAmount = Math.max(0, totalProjectValue - revenue);
   
   const totalBookings = await Booking.countDocuments();
   const totalQuotations = await Quotation.countDocuments();

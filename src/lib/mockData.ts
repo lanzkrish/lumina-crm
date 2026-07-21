@@ -69,6 +69,7 @@ export const mockBookings: Booking[] = [
 export const mockProjects: Project[] = [
   {
     id: 'P-001',
+    projectNumber: 'PRJ-XYZ123',
     name: 'Rahul Sharma',
     phone: '9876543210',
     email: 'rahul@example.com',
@@ -76,9 +77,12 @@ export const mockProjects: Project[] = [
     eventType: 'Wedding',
     status: 'Qualified',
     notes: 'Interested in premium package.',
-    quotations: ['Q-1001'],
+    totalValue: 50000,
     payments: ['P-2001'],
     crewBlueprint: [],
+    expenses: [
+      { date: new Date().toISOString(), description: 'Advance for photographer', amount: 5000 }
+    ],
     createdAt: '2026-07-01T10:00:00Z',
   }
 ];

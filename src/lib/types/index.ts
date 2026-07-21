@@ -79,6 +79,7 @@ export interface CrewBlueprintItem {
 
 export interface Project {
   id: string;
+  projectNumber: string;
   name: string;
   company?: string;
   phone: string;
@@ -88,10 +89,11 @@ export interface Project {
   eventDate?: string;
   status: string;
   notes?: string;
-  quotations: string[];
+  totalValue: number;
   payments: string[];
   crewBlueprint: CrewBlueprintItem[];
   bookingId?: string;
+  expenses: { _id?: string; date: string; description: string; amount: number }[];
   createdAt: string;
 }
 

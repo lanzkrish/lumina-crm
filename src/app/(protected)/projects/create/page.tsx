@@ -18,6 +18,7 @@ export default function CreateProjectPage() {
     eventType: '',
     eventDate: '',
     status: 'Lead',
+    totalValue: 0,
     notes: ''
   });
   const [eventTypes, setEventTypes] = useState<any[]>([]);
@@ -48,6 +49,7 @@ export default function CreateProjectPage() {
       const dataToSave = {
         ...formData,
         eventType: finalEventType,
+        totalValue: Number(formData.totalValue) || 0,
         eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined
       };
       const newProject = await createProject(dataToSave);
@@ -197,6 +199,15 @@ export default function CreateProjectPage() {
               <option value="Booked">Booked</option>
               <option value="Completed">Completed</option>
             </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-[12px] font-semibold text-on-surface-variant mb-1">Total Project Value (₹) *</label>
+            <input 
+              type="number"
+              name="totalValue" value={formData.totalValue} onChange={handleChange}
+              className="bg-transparent border-b border-outline-variant py-2 focus:outline-none focus:border-primary"
+              placeholder="e.g. 50000"
+            />
           </div>
           <div className="flex flex-col md:col-span-2">
             <label className="text-[12px] font-semibold text-on-surface-variant mb-1">Notes / Requirements</label>

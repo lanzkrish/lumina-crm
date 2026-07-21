@@ -18,6 +18,7 @@ export default function PaymentPage() {
   const [method, setMethod] = useState<'qr' | 'id' | 'bank'>('qr');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -50,6 +51,32 @@ export default function PaymentPage() {
       toast.error('Failed to submit payment details');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      const element = document.getElementById('pdf-agreement-container');
+      if (!element) return;
+      
+      element.style.display = 'block';
+      
+      await html2pdf().from(element).set({
+        margin: [15, 15],
+        filename: 'Momentary_Studio_Invoice_and_Agreement.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+      
+      element.style.display = 'none';
+      toast.success('PDF Downloaded Successfully');
+    } catch (e) {
+      toast.error('Failed to generate PDF');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -86,13 +113,106 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          <button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-primary text-white py-3 rounded-xl font-medium shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
-          >
-            Submit Another Payment
-          </button>
+          <div className="space-y-3">
+            <button 
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className="w-full bg-primary text-white py-3 rounded-xl font-medium shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity disabled:opacity-70"
+            >
+              {isDownloading ? 'Generating PDF...' : 'Download Invoice & Agreement PDF'}
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-xl font-medium hover:bg-surface-variant/80 transition-colors"
+            >
+              Submit Another Payment
+            </button>
+          </div>
         </motion.div>
+
+        {/* Hidden PDF Template */}
+        <div id="pdf-agreement-container" style={{ display: 'none', width: '800px', padding: '40px', backgroundColor: 'white', color: 'black', fontFamily: 'sans-serif' }}>
+          {/* Page 1: Invoice */}
+          <div style={{ minHeight: '1050px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '20px' }}>PAYMENT RECEIPT</h1>
+            <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
+            <p><strong>Client Name:</strong> {formData.customerName}</p>
+            <p><strong>Phone:</strong> {formData.phone}</p>
+            <p><strong>Email:</strong> {formData.email}</p>
+            <p><strong>Amount Paid:</strong> ₹{formData.amount}</p>
+            <p><strong>Payment Method:</strong> {method === 'qr' ? 'UPI QR' : method === 'id' ? 'UPI ID' : 'Bank Transfer'}</p>
+            
+            <div style={{ marginTop: '40px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>Payment Proof:</h3>
+              {screenshotUrl && (
+                <img src={screenshotUrl} alt="Payment Screenshot" style={{ maxWidth: '400px', border: '1px solid #ccc' }} />
+              )}
+            </div>
+          </div>
+          
+          {/* Page Break for html2pdf */}
+          <div className="html2pdf__page-break"></div>
+
+          {/* Page 2: Agreement */}
+          <div style={{ minHeight: '1050px', paddingTop: '20px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0' }}>MOMENTARY STUDIO</h2>
+              <h3 style={{ fontSize: '18px', margin: '5px 0 0 0' }}>PHOTOGRAPHY & VIDEOGRAPHY AGREEMENT</h3>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '5px' }}>1. CLIENT & EVENT DETAILS</h4>
+              <p><strong>Client Name(s):</strong> {formData.customerName}</p>
+              <p><strong>Event Date & Time:</strong> TBD</p>
+              <p><strong>Event Location:</strong> TBD</p>
+              <p><strong>Services (Photo/Video):</strong> TBD</p>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '5px' }}>2. PAYMENT TERMS</h4>
+              <p><strong>Total Contract Fee:</strong> TBD</p>
+              <p><strong>Amount Paid:</strong> ₹{formData.amount}</p>
+              <p><strong>Balance Due Date:</strong> TBD</p>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '5px' }}>3. TERMS & CONDITIONS</h4>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Scope of Work:</strong> Momentary Studio agrees to provide photography and/or videography services as outlined in Section 1. Final edited deliverables will be provided to the Client within 4-6 weeks of the event date.
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Cancellations & Rescheduling:</strong> If the Client cancels this agreement, the retainer fee is strictly non-refundable. Rescheduling is subject to studio availability; if the studio cannot accommodate the new date, the retainer is forfeited.
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Copyright & Usage:</strong> Momentary Studio retains the legal copyright to all captured images and video footage. The Client is granted a personal use license to print and share the media. The Client may not apply additional filters or re-edit the final deliverables.
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Revisions (Video Only):</strong> The total fee includes one round of standard revisions for video deliverables. Any additional edits requested by the Client will be billed at an hourly rate.
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Model Release:</strong> The Client grants Momentary Studio permission to use the photographs and/or videos for marketing, professional portfolio, website, and promotional purposes.
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                <strong>Limit of Liability:</strong> If Momentary Studio cannot perform this agreement due to an act of God, extreme weather, severe illness, or equipment failure beyond their control, liability is limited to a full refund of all monies paid. The studio is not liable for missed shots due to lack of client cooperation or scheduling delays.
+              </p>
+            </div>
+
+            <div style={{ marginTop: '50px' }}>
+              <p style={{ fontSize: '14px' }}>By completing the payment online, the Client electronically agrees to these terms and conditions.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>
+                <div style={{ borderTop: '1px solid #000', width: '200px', paddingTop: '5px' }}>
+                  <p style={{ margin: '0', fontSize: '14px' }}>Client Signature: <em>{formData.customerName}</em></p>
+                  <p style={{ margin: '0', fontSize: '12px' }}>Date: {new Date().toLocaleDateString()}</p>
+                </div>
+                <div style={{ borderTop: '1px solid #000', width: '200px', paddingTop: '5px' }}>
+                  <p style={{ margin: '0', fontSize: '14px' }}>Momentary Studio</p>
+                  <p style={{ margin: '0', fontSize: '12px' }}>Date: {new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
     );
   }
@@ -274,7 +394,7 @@ export default function PaymentPage() {
                   <input className="peer h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20 cursor-pointer accent-primary" required type="checkbox"/>
                 </div>
                 <span className="text-[12px] font-medium text-on-surface-variant select-none">
-                  I agree to the Terms & Conditions mentioned above.
+                  I agree to the Terms & Conditions and understand that upon confirming, I agree to the Momentary Studio Photography & Videography Agreement, which will be generated as a PDF.
                 </span>
               </label>
 
@@ -283,7 +403,7 @@ export default function PaymentPage() {
                 disabled={isSubmitting}
                 className="w-full bg-primary hover:bg-primary/90 text-white text-[16px] font-bold py-4 rounded-xl shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 mt-4"
               >
-                {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                {isSubmitting ? 'Processing...' : 'Confirm Payment'}
               </button>
               
               <p className="text-center text-[12px] font-medium text-on-surface-variant/60 flex items-center justify-center gap-1">

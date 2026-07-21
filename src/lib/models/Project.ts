@@ -7,6 +7,7 @@ interface CrewBlueprintItem {
 }
 
 export interface IProject extends Document {
+  projectNumber: string;
   name: string;
   company?: string;
   phone: string;
@@ -16,11 +17,13 @@ export interface IProject extends Document {
   eventDate?: Date;
   status: string;
   notes?: string;
+  totalValue: number;
   
-  quotations: string[];
   payments: string[];
   crewBlueprint: CrewBlueprintItem[];
   bookingId?: string;
+  
+  expenses: { date: Date; description: string; amount: number }[];
   
   createdAt: Date;
 }
@@ -32,6 +35,7 @@ const CrewBlueprintSchema = new Schema({
 });
 
 const ProjectSchema: Schema = new Schema({
+  projectNumber: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   company: { type: String },
   phone: { type: String, required: true },
@@ -41,11 +45,17 @@ const ProjectSchema: Schema = new Schema({
   eventDate: { type: Date },
   status: { type: String, required: true, default: 'Lead' },
   notes: { type: String },
+  totalValue: { type: Number, required: true, default: 0 },
   
-  quotations: [{ type: Schema.Types.ObjectId, ref: 'Quotation' }],
   payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
   crewBlueprint: [CrewBlueprintSchema],
   bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
+  
+  expenses: [{
+    date: { type: Date, required: true },
+    description: { type: String, required: true },
+    amount: { type: Number, required: true }
+  }],
   
   createdAt: { type: Date, default: Date.now },
 });
