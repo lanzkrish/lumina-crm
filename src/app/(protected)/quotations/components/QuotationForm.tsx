@@ -107,18 +107,19 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
 
   const generateHTML = () => {
     const servicesHtml = services.map((s: any) => {
-      // Split by any newline character combination
-      const bullets = (s.description || '')
+      const details = (s.description || '')
         .split(/\r\n|\n|\r/)
         .filter((line: string) => line.trim())
-        .map((line: string) => `<li>${line.trim()}</li>`)
+        .map((line: string) => `<div style="font-size:11px; color:#555; margin-top:2px;">${line.trim()}</div>`)
         .join('');
       return `
       <tr>
         <td class="package">
-          <h4>${s.name || 'Service Item'}</h4>
-          ${bullets ? `<ul style="list-style-type: disc; margin: 4px 0 0 20px; padding: 0;">${bullets}</ul>` : ''}
+          <h4 style="margin:0 0 4px; font-size:16px;">${s.name || 'Service Item'}</h4>
+          ${details}
         </td>
+        <td style="text-align:center; padding-top:12px; font-size:14px;">₹${s.price.toLocaleString()}</td>
+        <td style="text-align:right; padding-top:12px; font-size:14px;">₹${(s.price * s.quantity).toLocaleString()}</td>
       </tr>
       `;
     }).join('');
@@ -134,18 +135,18 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
       *{box-sizing:border-box}
       body{margin:0;background:#e4e4ff;font-family:Arial,Helvetica,sans-serif;color:#333;padding:20px}
       .container{max-width:800px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12)}
-      .header{background:linear-gradient(135deg,#5c0656,#8d2d88);color:#fff;padding:24px;display:flex;justify-content:space-between}
+      .header{background:#e8e4ff;color:#5e006f;padding:24px;display:flex;justify-content:space-between}
       .header h1{margin:0;font-size:30px}
-      .header p{margin:4px 0;font-size:13px}
+      .header p{margin:4px 0;font-size:13px;color:#333;}
       .section{padding:20px}
-      .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:16px}
-      .card{background:#f6f3ff;border-left:5px solid #5c0656;border-radius:10px;padding:14px}
+      .card{background:#f6f3ff;border-left:5px solid #5c0656;border-radius:10px;padding:14px; margin-bottom:16px;}
       .card h3{margin:0 0 8px;color:#5c0656}
       table{width:100%;border-collapse:collapse}
-      th{background:#5c0656;color:#fff;padding:10px;text-align:left}
-      td{padding:12px;border-bottom:1px solid #ddd;vertical-align:top}
-      .package h4{margin:8px 0;color:#5c0656}
-      .package ul {margin: 5px 0 0 20px; padding: 0; font-size: 13px; color: #555;}
+      th{background:#e8e4ff;color:#5e006f;padding:10px;text-align:left}
+      th.rate{text-align:center;width:120px;}
+      th.subtotal{text-align:right;width:120px;}
+      td{padding:12px;border-bottom:none;vertical-align:top}
+      .package h4{color:#5c0656}
       .summary{width:280px;margin-left:auto;margin-top:12px}
       .summary td{padding:8px}
       .total{background:linear-gradient(135deg,#5c0656,#8d2d88);color:#fff;font-weight:bold}
@@ -173,36 +174,36 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
       <p>Instagram: @arjun_photographyyy</p>
       </div>
       <div style="text-align:right">
-      <p><b>Quotation No:</b> ${quotationId ? quotationId.slice(-4) : Date.now().toString().slice(-4)}</p>
-      <p><b>Date:</b> ${formData.bookingDate ? new Date(formData.bookingDate).toLocaleDateString() : new Date().toLocaleDateString()}</p>
+      <p style="color:#5e006f;"><b>Quotation No:</b> ${quotationId ? quotationId.slice(-4) : Date.now().toString().slice(-4)}</p>
+      <p style="color:#5e006f;"><b>Invoice Date:</b> ${new Date().toLocaleDateString()}</p>
+      <p style="color:#5e006f;"><b>Booking Date:</b> ${formData.bookingDate ? new Date(formData.bookingDate).toLocaleDateString() : 'TBD'}</p>
       </div>
       </div>
 
       <div class="section">
-      <div class="grid">
       <div class="card">
       <h3>Quotation To</h3>
       <p><b>${formData.customerName || 'Client Name'}</b><br>Mail: ${formData.email || '__________'}<br>Address: ${formData.location || '__________'}</p>
       </div>
-      <div class="card">
-      <h3>Payment</h3>
-      <p>PhonePe: <b>9938992712</b><br>Total: <b>₹${grandTotal.toLocaleString()}</b></p>
-      </div>
-      </div>
 
       <table>
-      <tr><th>Description</th></tr>
+      <tr>
+        <th>Description</th>
+        <th class="rate">Rate</th>
+        <th class="subtotal">Subtotal</th>
+      </tr>
       ${servicesHtml}
       </table>
 
       <table class="summary">
       <tr><td>Subtotal</td><td align="right">₹${subTotal.toLocaleString()}</td></tr>
-      <tr><td>Tax (%)</td><td align="right">-</td></tr>
+      <tr><td>Discount</td><td align="right">₹${formData.discount || 0}</td></tr>
       <tr class="total"><td>Grand Total</td><td align="right">₹${grandTotal.toLocaleString()}</td></tr>
       </table>
 
       <div class="payment">
-      <h3>Payment Schedule</h3>
+      <h3>Payment Schedule & Info</h3>
+      <p style="margin-bottom:10px; font-size:14px;">UPI ID: <b>9938992712@ybl</b><br>PhonePe: <b>7788992712</b></p>
       <div class="steps">
       <div class="step"><div class="pct">50%</div><p><b>Booking</b></p><p>Advance Payment</p></div>
       <div class="step"><div class="pct">30%</div><p><b>Event Day</b></p><p>During Shoot</p></div>
@@ -221,6 +222,7 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
       <li>Drone coverage depends on weather and permissions.</li>
       <li>Raw files are not included unless agreed separately.</li>
       <li>Additional services beyond this quotation will be charged separately.</li>
+      <li><b>All crew members' fooding, lodging and travels will be paid separately to the total project cost paid by the client.</b></li>
       </ol>
       </div>
       </div>

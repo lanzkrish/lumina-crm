@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getDashboardStats } from '@/services/api';
+import { getDashboardStats, getProjects } from '@/services/api';
 import { 
   FileText, 
   CalendarDays, 
@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import RecentActivity from './components/RecentActivity';
+import CalendarView from './components/CalendarView';
+import { Project } from '@/lib/types';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -19,12 +21,18 @@ export default function DashboardPage() {
     pendingPaymentsAmount: 0,
     revenue: 0,
     totalProjects: 0,
+    finishedProjects: 0,
   });
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDashboardStats().then((data) => {
-      setStats(data);
+    Promise.all([
+      getDashboardStats(),
+      getProjects()
+    ]).then(([statsData, projectsData]) => {
+      setStats(statsData);
+      setProjects(projectsData);
       setLoading(false);
     });
   }, []);
@@ -65,8 +73,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Total Bookings</p>
-            <h3 className="text-[24px] font-medium text-primary mt-1">{stats.totalBookings}</h3>
+            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Finished Projects</p>
+            <h3 className="text-[24px] font-medium text-primary mt-1">{stats.finishedProjects}</h3>
           </div>
         </motion.div>
 
@@ -104,7 +112,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Total Projects</p>
+            <p className="text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider">Total Bookings</p>
             <h3 className="text-[24px] font-medium text-primary mt-1">{stats.totalProjects}</h3>
           </div>
         </motion.div>
@@ -113,8 +121,8 @@ export default function DashboardPage() {
 
       {/* Placeholder for Charts and Tables */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card p-6 min-h-[300px] flex items-center justify-center text-outline">
-          Chart Placeholder (Revenue Trend)
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card p-6 min-h-[300px]">
+          <CalendarView projects={projects} />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass-card p-6 min-h-[300px]">
           <RecentActivity />

@@ -201,13 +201,15 @@ export async function getDashboardStats() {
   const totalBookings = await Booking.countDocuments();
   const totalQuotations = await Quotation.countDocuments();
   const totalProjects = await Project.countDocuments();
+  const finishedProjects = await Project.countDocuments({ status: 'Completed' });
 
   return {
     totalQuotations,
     totalBookings,
     pendingPaymentsAmount,
     revenue,
-    totalProjects
+    totalProjects,
+    finishedProjects
   };
 }
 

@@ -31,6 +31,7 @@ export default function ProjectsPage() {
       case 'Negotiation':
         return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-tight bg-secondary/10 text-secondary border border-secondary/20">{status}</span>;
       case 'Closed':
+      case 'Completed':
         return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-tight bg-green-100 text-green-700 border border-green-200">{status}</span>;
       case 'Urgent Follow-up':
         return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-tight bg-error-container/50 text-error border border-error/20">{status}</span>;
@@ -80,7 +81,7 @@ export default function ProjectsPage() {
                   <th className="px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-on-surface-variant/70 border-b border-outline-variant/10">Location</th>
                   <th className="px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-on-surface-variant/70 border-b border-outline-variant/10">
                     <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors">
-                      Lead Status <Filter className="w-3 h-3" />
+                      Status <Filter className="w-3 h-3" />
                     </div>
                   </th>
                   <th className="px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-on-surface-variant/70 border-b border-outline-variant/10">Created Date</th>
