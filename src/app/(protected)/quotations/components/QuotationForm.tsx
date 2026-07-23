@@ -169,9 +169,9 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
       <div class="header">
       <div>
       <h1>ARJUN PHOTOGRAPHY</h1>
+      <p>Ph: +91 7788992712</p>
+      <p>Mail: bsamal2712@gmail.com</p>
       <p>Dharam Vihar, Jagamara, Bhubaneswar, Odisha - 751030</p>
-      <p>📞 +91 7788992712 | ✉️ bsamal2712@gmail.com</p>
-      <p>Instagram: @arjun_photographyyy</p>
       </div>
       <div style="text-align:right">
       <p style="color:#5e006f;"><b>Quotation No:</b> ${quotationId ? quotationId.slice(-4) : Date.now().toString().slice(-4)}</p>

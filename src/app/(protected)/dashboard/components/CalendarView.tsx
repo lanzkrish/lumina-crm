@@ -33,7 +33,7 @@ export default function CalendarView({ projects }: { projects: Project[] }) {
       days.push(
         <div 
           key={dayStr} 
-          className={`min-h-[80px] p-2 border border-outline-variant/30 flex flex-col ${!isCurrentMonth ? 'text-on-surface-variant/40 bg-surface-container-lowest' : ''}`}
+          className={`min-h-[80px] p-2 flex flex-col ${!isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'bg-white text-gray-900'}`}
         >
           <span className="text-sm font-medium self-end">{formattedDate}</span>
           <div className="mt-1 flex flex-col gap-1 overflow-y-auto max-h-[60px] no-scrollbar">
@@ -56,7 +56,7 @@ export default function CalendarView({ projects }: { projects: Project[] }) {
       day = day.add(1, 'day');
     }
     rows.push(
-      <div className="grid grid-cols-7 gap-px bg-outline-variant/30" key={day.format('YYYY-MM-DD')}>
+      <div className="grid grid-cols-7 gap-px bg-gray-200" key={day.format('YYYY-MM-DD')}>
         {days}
       </div>
     );
@@ -80,7 +80,7 @@ export default function CalendarView({ projects }: { projects: Project[] }) {
           <div key={d} className="text-center text-xs font-semibold text-on-surface-variant uppercase">{d}</div>
         ))}
       </div>
-      <div className="flex-1 flex flex-col border border-outline-variant/30 rounded-lg overflow-hidden bg-outline-variant/30 gap-px">
+      <div className="flex-1 flex flex-col border border-gray-200 rounded-lg overflow-hidden bg-gray-200 gap-px">
         {rows}
       </div>
     </div>
