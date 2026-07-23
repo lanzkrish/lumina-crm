@@ -139,7 +139,7 @@ export default function BlueprintPage() {
           </div>
         </div>
         
-        <div className="flex-1 flex overflow-x-auto custom-scrollbar px-2 pb-2 sm:pb-0 gap-2 items-center min-w-0">
+        <div className="flex-1 flex flex-wrap px-2 pb-2 sm:pb-0 gap-2 items-center min-w-0">
           <button 
             onClick={() => setSelectedRole('All')}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${selectedRole === 'All' ? 'bg-primary text-on-primary' : 'bg-surface-variant/50 text-on-surface-variant hover:bg-surface-variant/80'}`}
