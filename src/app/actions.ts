@@ -202,6 +202,21 @@ export async function getDashboardStats() {
   const totalQuotations = await Quotation.countDocuments();
   const totalProjects = await Project.countDocuments();
   const finishedProjects = await Project.countDocuments({ status: 'Completed' });
+  const pendingProjects = await Project.countDocuments({ status: { $ne: 'Completed' } });
+
+  const totalCrew = await Crew.countDocuments();
+  const projectsWithCrew = await Project.find({ 
+    status: { $ne: 'Completed' },
+    'crewBlueprint.assignedCrewId': { $exists: true, $ne: null } 
+  }, { crewBlueprint: 1 }).lean();
+  const assignedCrewIds = new Set();
+  projectsWithCrew.forEach((p: any) => {
+    p.crewBlueprint?.forEach((c: any) => {
+      if (c.assignedCrewId) assignedCrewIds.add(c.assignedCrewId.toString());
+    });
+  });
+  const totalCrewAssigned = assignedCrewIds.size;
+  const totalCrewNotAssigned = totalCrew - totalCrewAssigned;
 
   return {
     totalQuotations,
@@ -209,7 +224,11 @@ export async function getDashboardStats() {
     pendingPaymentsAmount,
     revenue,
     totalProjects,
-    finishedProjects
+    finishedProjects,
+    pendingProjects,
+    totalCrew,
+    totalCrewAssigned,
+    totalCrewNotAssigned
   };
 }
 
