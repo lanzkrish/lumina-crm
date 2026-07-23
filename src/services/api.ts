@@ -13,7 +13,11 @@ export const getDashboardStats = async () => {
       pendingPaymentsAmount: 0,
       revenue: 0,
       totalProjects: 0,
-      finishedProjects: 0
+      finishedProjects: 0,
+      pendingProjects: 0,
+      totalCrew: 0,
+      totalCrewAssigned: 0,
+      totalCrewNotAssigned: 0
     };
   }
 };
