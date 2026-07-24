@@ -161,11 +161,11 @@ export default function DashboardPage() {
       </section>
 
       {/* Placeholder for Charts and Tables */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="glass-card p-6 min-h-[300px]">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="glass-card p-6 min-h-[300px] lg:col-span-2">
           <CalendarView projects={projects} />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass-card p-6 min-h-[300px]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass-card p-6 min-h-[300px] lg:col-span-1">
           <RecentActivity />
         </motion.div>
       </section>
