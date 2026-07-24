@@ -118,8 +118,8 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
           <h4 style="margin:0 0 4px; font-size:16px;">${s.name || 'Service Item'}</h4>
           ${details}
         </td>
-        <td style="text-align:center; padding-top:12px; font-size:14px;">₹${s.price.toLocaleString()}</td>
-        <td style="text-align:right; padding-top:12px; font-size:14px;">₹${(s.price * s.quantity).toLocaleString()}</td>
+        <td style="text-align:center; padding-top:12px; font-size:14px;"></td>
+        <td style="text-align:right; padding-top:12px; font-size:14px;"></td>
       </tr>
       `;
     }).join('');
@@ -203,7 +203,7 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
 
       <div class="payment">
       <h3>Payment Schedule & Info</h3>
-      <p style="margin-bottom:10px; font-size:14px;">UPI ID: <b>9938992712@ybl</b><br>PhonePe: <b>7788992712</b></p>
+      <p style="margin-bottom:10px; font-size:14px; line-height: 1.5;"><b>Bank Details:</b><br/>Name: <b>BABUL SAMAL</b><br/>A/C No: <b>39149567096</b><br/>IFSC: <b>SBIN0000068</b></p>
       <div class="steps">
       <div class="step"><div class="pct">50%</div><p><b>Booking</b></p><p>Advance Payment</p></div>
       <div class="step"><div class="pct">30%</div><p><b>Event Day</b></p><p>During Shoot</p></div>

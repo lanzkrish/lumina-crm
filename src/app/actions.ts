@@ -8,6 +8,12 @@ import Quotation from '@/lib/models/Quotation';
 import Booking from '@/lib/models/Booking';
 import Crew from '@/lib/models/Crew';
 import EventType from '@/lib/models/EventType';
+import Otp from '@/lib/models/Otp';
+import { Resend } from 'resend';
+import bcrypt from 'bcryptjs';
+import { generateOTPEmailHtml } from '@/lib/emailTemplates';
+
+const resend = new Resend(process.env.RESEND_API_KEY || 'default_key');
 
 export async function getEventTypes() {
   await connectToDatabase();
@@ -254,4 +260,54 @@ export async function deleteCrew(id: string) {
   await connectToDatabase();
   await Crew.findByIdAndDelete(id);
   return { success: true };
+}
+
+export async function sendLoginOTP(username: string, email: string) {
+  await connectToDatabase();
+  
+  // Generate a random 6 digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+  
+  // Store it in DB (expires in 5 mins)
+  await Otp.create({
+    email,
+    hashedOtp
+  });
+  
+  // Send email
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL || email;
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: adminEmail,
+      subject: 'Arjun Photography - Admin Login OTP',
+      html: generateOTPEmailHtml(username, otp)
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    return { success: false, error: 'Failed to send OTP email' };
+  }
+}
+
+export async function verifyLoginOTP(email: string, otp: string) {
+  await connectToDatabase();
+  
+  // Find the latest OTP for this email
+  const otpRecord = await Otp.findOne({ email }).sort({ createdAt: -1 });
+  
+  if (!otpRecord) {
+    return { success: false, error: 'OTP expired or not found' };
+  }
+  
+  const isValid = await bcrypt.compare(otp, otpRecord.hashedOtp);
+  
+  if (isValid) {
+    // Delete OTP after successful verification
+    await Otp.deleteOne({ _id: otpRecord._id });
+    return { success: true };
+  } else {
+    return { success: false, error: 'Invalid OTP' };
+  }
 }

@@ -3,34 +3,74 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { Camera, AtSign, Lock, Eye, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Camera, AtSign, Lock, Eye, ArrowRight, ShieldCheck, Mail } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { mockUsers } from '@/lib/mockData';
+import { sendLoginOTP, verifyLoginOTP } from '@/app/actions';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState<1 | 2>(1);
+  const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     const envUser = process.env.NEXT_PUBLIC_ADMIN_USER || 'admin';
     const envPass = process.env.NEXT_PUBLIC_ADMIN_PASS || 'lumina2025';
+    // Use an environment variable or default
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || username;
 
     if (username === envUser && password === envPass) {
-      // Login success
-      const user = mockUsers.find(u => u.username === 'admin') || mockUsers[0];
-      login(user);
-      router.push('/dashboard');
+      // Correct credentials, request OTP
+      try {
+        const res = await sendLoginOTP(username, adminEmail);
+        if (res.success) {
+          toast.success('OTP sent to your email');
+          setStep(2);
+        } else {
+          setError(res.error || 'Failed to send OTP');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+      }
     } else {
       setError('Invalid username or password');
     }
+    setIsLoading(false);
+  };
+
+  const handleOTPVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || username;
+    
+    try {
+      const res = await verifyLoginOTP(adminEmail, otp);
+      if (res.success) {
+        const user = mockUsers.find(u => u.username === 'admin') || mockUsers[0];
+        login(user);
+        router.push('/dashboard');
+        toast.success('Login Successful');
+      } else {
+        setError(res.error || 'Invalid OTP');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -59,89 +99,151 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_25px_50px_-12px_rgba(92,6,86,0.08)] rounded-[16px] p-10 flex flex-col items-center"
+          className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_25px_50px_-12px_rgba(92,6,86,0.08)] rounded-[16px] p-10 flex flex-col items-center overflow-hidden relative"
         >
           {/* Logo Section */}
           <div className="mb-8 flex flex-col items-center">
             <div className="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20 mb-4 transform transition-transform hover:scale-105 duration-300">
-              <Camera className="text-white w-8 h-8" />
+              {step === 1 ? <Camera className="text-white w-8 h-8" /> : <ShieldCheck className="text-white w-8 h-8" />}
             </div>
-            <h1 className="text-[32px] leading-[1.2] font-semibold text-primary tracking-tighter">Arjun Photography</h1>
-            <p className="text-[14px] text-on-surface-variant mt-1 opacity-70 font-medium">Elevated Photography Management</p>
+            <h1 className="text-[32px] leading-[1.2] font-semibold text-primary tracking-tighter">
+              {step === 1 ? 'Arjun Photography' : 'Verification'}
+            </h1>
+            <p className="text-[14px] text-on-surface-variant mt-1 opacity-70 font-medium text-center">
+              {step === 1 ? 'Elevated Photography Management' : 'We sent a one-time password to your email.'}
+            </p>
           </div>
 
-          {/* Login Form */}
-          <form className="w-full space-y-8" onSubmit={handleLogin}>
-            {error && (
-              <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center">
-                {error}
-              </div>
-            )}
-            
-            {/* Username Field */}
-            <div className="relative group">
-              <div className="flex items-center space-x-3 mb-1 px-1">
-                <AtSign className="text-on-surface-variant w-5 h-5" />
-                <label className="text-[14px] font-medium text-on-surface-variant" htmlFor="username">Username</label>
-              </div>
-              <input 
-                className="w-full bg-transparent border-b border-outline-variant py-3 px-1 text-on-surface text-[16px] transition-all duration-300 placeholder:text-outline-variant/50 focus:outline-none focus:border-primary" 
-                id="username" 
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="creative.pro@arjunfilms.com" 
-                type="text"
-                required
-              />
-            </div>
-
-            {/* Password Field */}
-            <div className="relative group">
-              <div className="flex items-center justify-between mb-1 px-1">
-                <div className="flex items-center space-x-3">
-                  <Lock className="text-on-surface-variant w-5 h-5" />
-                  <label className="text-[14px] font-medium text-on-surface-variant" htmlFor="password">Password</label>
-                </div>
-                <a className="text-[12px] font-semibold text-on-primary-container hover:text-primary transition-colors" href="#">Forgot?</a>
-              </div>
-              <div className="relative">
-                <input 
-                  className="w-full bg-transparent border-b border-outline-variant py-3 px-1 text-on-surface text-[16px] transition-all duration-300 placeholder:text-outline-variant/50 focus:outline-none focus:border-primary pr-10" 
-                  id="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••" 
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                />
-                <button 
-                  className="absolute right-2 top-3 text-on-surface-variant/60 hover:text-primary" 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <Eye className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center px-1">
-              <input className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/20 bg-white/50 cursor-pointer" id="remember" type="checkbox"/>
-              <label className="ml-3 text-[14px] font-medium text-on-surface-variant cursor-pointer select-none" htmlFor="remember">Stay signed in for 30 days</label>
-            </div>
-
-            {/* CTA Button */}
-            <div className="pt-2">
-              <button 
-                className="w-full bg-primary-container hover:bg-primary text-white text-[14px] font-medium py-4 rounded-xl shadow-xl shadow-primary/10 active:scale-[0.98] transition-all duration-300 flex items-center justify-center space-x-2 group" 
-                type="submit"
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <motion.form 
+                key="step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full space-y-8" 
+                onSubmit={handleLogin}
               >
-                <span>Login</span>
-                <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-          </form>
-          
+                {error && (
+                  <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center">
+                    {error}
+                  </div>
+                )}
+                
+                {/* Username Field */}
+                <div className="relative group">
+                  <div className="flex items-center space-x-3 mb-1 px-1">
+                    <AtSign className="text-on-surface-variant w-5 h-5" />
+                    <label className="text-[14px] font-medium text-on-surface-variant" htmlFor="username">Username</label>
+                  </div>
+                  <input 
+                    className="w-full bg-transparent border-b border-outline-variant py-3 px-1 text-on-surface text-[16px] transition-all duration-300 placeholder:text-outline-variant/50 focus:outline-none focus:border-primary" 
+                    id="username" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="creative.pro@arjunfilms.com" 
+                    type="text"
+                    required
+                  />
+                </div>
+
+                {/* Password Field */}
+                <div className="relative group">
+                  <div className="flex items-center justify-between mb-1 px-1">
+                    <div className="flex items-center space-x-3">
+                      <Lock className="text-on-surface-variant w-5 h-5" />
+                      <label className="text-[14px] font-medium text-on-surface-variant" htmlFor="password">Password</label>
+                    </div>
+                    <a className="text-[12px] font-semibold text-on-primary-container hover:text-primary transition-colors" href="#">Forgot?</a>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      className="w-full bg-transparent border-b border-outline-variant py-3 px-1 text-on-surface text-[16px] transition-all duration-300 placeholder:text-outline-variant/50 focus:outline-none focus:border-primary pr-10" 
+                      id="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••" 
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                    />
+                    <button 
+                      className="absolute right-2 top-3 text-on-surface-variant/60 hover:text-primary" 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="pt-2">
+                  <button 
+                    disabled={isLoading}
+                    className="w-full bg-primary-container hover:bg-primary text-white text-[14px] font-medium py-4 rounded-xl shadow-xl shadow-primary/10 active:scale-[0.98] transition-all duration-300 flex items-center justify-center space-x-2 group disabled:opacity-70" 
+                    type="submit"
+                  >
+                    <span>{isLoading ? 'Sending OTP...' : 'Login'}</span>
+                    {!isLoading && <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" />}
+                  </button>
+                </div>
+              </motion.form>
+            ) : (
+              <motion.form 
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="w-full space-y-8" 
+                onSubmit={handleOTPVerify}
+              >
+                {error && (
+                  <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center">
+                    {error}
+                  </div>
+                )}
+                
+                {/* OTP Field */}
+                <div className="relative group">
+                  <div className="flex items-center justify-between mb-1 px-1">
+                    <div className="flex items-center space-x-3">
+                      <Mail className="text-on-surface-variant w-5 h-5" />
+                      <label className="text-[14px] font-medium text-on-surface-variant" htmlFor="otp">One Time Password</label>
+                    </div>
+                  </div>
+                  <input 
+                    className="w-full bg-transparent border-b border-outline-variant py-3 px-1 text-on-surface text-[24px] tracking-widest text-center transition-all duration-300 placeholder:text-outline-variant/50 focus:outline-none focus:border-primary" 
+                    id="otp" 
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="------" 
+                    type="text"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+
+                {/* CTA Button */}
+                <div className="pt-2">
+                  <button 
+                    disabled={isLoading}
+                    className="w-full bg-primary-container hover:bg-primary text-white text-[14px] font-medium py-4 rounded-xl shadow-xl shadow-primary/10 active:scale-[0.98] transition-all duration-300 flex items-center justify-center space-x-2 group disabled:opacity-70" 
+                    type="submit"
+                  >
+                    <span>{isLoading ? 'Verifying...' : 'Verify & Continue'}</span>
+                    {!isLoading && <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" />}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => { setStep(1); setOtp(''); setError(''); }}
+                    className="w-full mt-4 text-[13px] font-medium text-on-surface-variant hover:text-primary transition-colors text-center"
+                  >
+                    Back to login
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* System Status */}
