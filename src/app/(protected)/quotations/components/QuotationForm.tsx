@@ -183,7 +183,7 @@ export default function QuotationForm({ initialData, quotationId, projectId }: {
       <div class="section">
       <div class="card">
       <h3>Quotation To</h3>
-      <p><b>${formData.customerName || 'Client Name'}</b><br>Mail: ${formData.email || '__________'}<br>Address: ${formData.location || '__________'}</p>
+      <p><b>${formData.customerName || 'Client Name'}</b><br>Phone: ${formData.phone || '__________'}<br>Mail: ${formData.email || '__________'}<br>Address: ${formData.location || '__________'}</p>
       </div>
 
       <table>
